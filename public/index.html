@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tini.click — Encurte seus links</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #2a2a2a;
+      --accent: #00ff88;
+      --accent2: #00cc6a;
+      --text: #f0f0f0;
+      --muted: #666;
+      --danger: #ff4466;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow orb */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(0,255,136,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* NAV */
+    nav {
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      background: rgba(10,10,10,0.8);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-family: 'Geist', sans-serif;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-left: 2rem;
+      transition: color 0.2s;
+      font-family: 'Geist', sans-serif;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 6rem 1rem 4rem;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.4rem;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 8vw, 6rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.2rem;
+      font-family: 'Geist', sans-serif;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 420px;
+      margin: 0 auto 3rem;
+      font-family: 'Geist Mono', monospace;
+      font-weight: 400;
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+    }
+
+    /* INPUT CARD */
+    .shorten-card {
+      max-width: 680px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .shorten-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), transparent 50%);
+      z-index: -1;
+    }
+
+    .input-group-custom {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .url-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.88rem;
+      padding: 0.85rem 1.2rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .url-input::placeholder { color: var(--muted); }
+
+    .url-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,255,136,0.1);
+    }
+
+    .btn-shorten {
+      background: var(--accent);
+      color: #0a0a0a;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Geist', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      letter-spacing: 0.02em;
+      padding: 0.85rem 1.8rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-shorten:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-shorten:active { transform: translateY(0); }
+    .btn-shorten:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* RESULT */
+    .result-box {
+      margin-top: 1.25rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      animation: fadeIn 0.3s ease;
+      display: none;
+    }
+
+    .result-box.show { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-url {
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--accent);
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-copy:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-copy.copied {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,255,136,0.08);
+    }
+
+    .error-msg {
+      margin-top: 0.75rem;
+      color: var(--danger);
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.82rem;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: 'Geist Mono', monospace;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Loading spinner */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── MOBILE RESPONSIVENESS ─────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.25rem; }
+      .logo { font-size: 1.2rem; }
+      .nav-links a { font-size: 0.72rem; margin-left: 1rem; }
+
+      .hero { padding: 4rem 1.25rem 3rem; }
+
+      .shorten-card { padding: 1.5rem 1.25rem; }
+
+      .input-group-custom { flex-direction: column; gap: 0.6rem; }
+
+      .btn-shorten { width: 100%; padding: 0.9rem; }
+
+      .result-box { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .btn-copy { align-self: flex-end; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 0.9rem 1rem; }
+      .nav-links a { margin-left: 0.75rem; letter-spacing: 0.02em; }
+
+      .hero-tag { font-size: 0.62rem; }
+
+      .shorten-card { border-radius: 12px; padding: 1.25rem 1rem; }
+
+      .url-input { font-size: 0.82rem; }
+
+      footer { padding: 1.5rem 1rem; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">tini<span>.click</span></a>
+    <div class="nav-links">
+      <a href="/api/docs">Documentação</a>
+      <a href="/api/health">Status</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-tag">🔗 Encurtador de Links</div>
+
+    <!-- SHORTEN CARD -->
+    <div class="shorten-card">
+      <div class="input-group-custom">
+        <input
+          type="url"
+          class="url-input"
+          id="urlInput"
+          placeholder="https://seu-link-longo-aqui.com/..."
+          autocomplete="off"
+        />
+        <button class="btn-shorten" id="shortenBtn" onclick="shortenUrl()">
+          Encurtar
+        </button>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <div class="result-box" id="resultBox">
+        <span class="result-url" id="resultUrl"></span>
+        <button class="btn-copy" id="copyBtn" onclick="copyUrl()">Copiar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    tini.click &nbsp;|&nbsp; Desenvolvido por <a href="https://linkedin.com/in/batistabjs" target="_blank" rel="noopener">@batistabjs</a>
+  </footer>
+
+</div>
+
+<script>
+  let currentShortUrl = '';
+
+  async function shortenUrl() {
+    const input = document.getElementById('urlInput');
+    const btn = document.getElementById('shortenBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const resultBox = document.getElementById('resultBox');
+    const resultUrl = document.getElementById('resultUrl');
+    const url = input.value.trim();
+
+    // Reset
+    errorMsg.classList.remove('show');
+    resultBox.classList.remove('show');
+
+    if (!url) {
+      showError('Por favor, insira uma URL.');
+      return;
+    }
+
+    try { new URL(url); } catch {
+      showError('URL inválida. Certifique-se de incluir https://');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    try {
+      const res = await fetch(`/api?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Erro desconhecido');
+
+      currentShortUrl = data.shortUrl;
+      resultUrl.textContent = data.shortUrl;
+      resultBox.classList.add('show');
+
+      // Reset copy button
+      const copyBtn = document.getElementById('copyBtn');
+      copyBtn.textContent = 'Copiar';
+      copyBtn.classList.remove('copied');
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Encurtar';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  async function copyUrl() {
+    if (!currentShortUrl) return;
+    try {
+      await navigator.clipboard.writeText(currentShortUrl);
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copiar';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch {
+      alert('Não foi possível copiar. Copie manualmente: ' + currentShortUrl);
+    }
+  }
+
+  // Allow Enter key
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') shortenUrl();
+  });
+
+</script>
+</body>
+</html>

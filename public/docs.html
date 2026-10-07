@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tini.click — Documentação da API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #2a2a2a;
+      --accent: #00ff88;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      background: rgba(10,10,10,0.9);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-family: 'Geist', sans-serif;
+      flex-shrink: 0;
+    }
+    .logo span { color: var(--accent); }
+
+    .nav-links { display: flex; align-items: center; }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-left: 1.75rem;
+      transition: color 0.2s;
+      font-family: 'Geist', sans-serif;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HEADER */
+    .docs-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 3.5rem 1.5rem 2.5rem;
+    }
+
+    .docs-tag {
+      display: inline-block;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+      color: var(--accent);
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+      font-family: 'Geist Mono', monospace;
+    }
+
+    .docs-header h1 {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.6rem;
+      font-family: 'Geist', sans-serif;
+      line-height: 1.1;
+    }
+
+    .docs-header p {
+      color: var(--muted);
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    /* SWAGGER WRAPPER */
+    #swagger-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 1rem 4rem;
+    }
+
+    /* ── Swagger UI overrides ───────────────────────────────── */
+    .swagger-ui { font-family: 'Geist', sans-serif !important; }
+
+    .swagger-ui .topbar { display: none !important; }
+    .swagger-ui .info { margin: 0 0 1.5rem !important; }
+    .swagger-ui .info hgroup.main,
+    .swagger-ui .info .title,
+    .swagger-ui .info .description,
+    .swagger-ui .info__contact,
+    .swagger-ui .info__license { display: none !important; }
+
+    .swagger-ui .scheme-container {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 12px;
+      padding: 1rem 1.5rem !important;
+      box-shadow: none !important;
+    }
+
+    .swagger-ui .opblock-tag {
+      color: var(--text) !important;
+      border-bottom: 1px solid var(--border) !important;
+      font-family: 'Geist', sans-serif !important;
+      font-weight: 700 !important;
+    }
+
+    .swagger-ui .opblock {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 12px !important;
+      box-shadow: none !important;
+      margin: 0 0 1rem !important;
+    }
+
+    .swagger-ui .opblock.opblock-get .opblock-summary {
+      border-color: var(--border) !important;
+    }
+
+    .swagger-ui .opblock.opblock-get .opblock-summary-method {
+      background: var(--accent) !important;
+      color: #000 !important;
+      font-family: 'Geist', sans-serif !important;
+      font-weight: 700 !important;
+      border-radius: 6px !important;
+    }
+
+    .swagger-ui .opblock-summary-path,
+    .swagger-ui .opblock-summary-description {
+      color: var(--text) !important;
+      font-family: 'Geist Mono', monospace !important;
+    }
+
+    .swagger-ui .opblock-body { background: var(--bg) !important; }
+
+    .swagger-ui .opblock-section-header {
+      background: var(--surface) !important;
+      border-bottom: 1px solid var(--border) !important;
+    }
+
+    .swagger-ui .opblock-section-header h4 {
+      color: var(--text) !important;
+      font-family: 'Geist', sans-serif !important;
+    }
+
+    .swagger-ui table thead tr th,
+    .swagger-ui table thead tr td {
+      color: var(--muted) !important;
+      border-bottom: 1px solid var(--border) !important;
+      font-family: 'Geist', sans-serif !important;
+      font-size: 0.72rem !important;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .swagger-ui .parameter__name,
+    .swagger-ui .parameter__type,
+    .swagger-ui .parameter__in {
+      color: var(--text) !important;
+      font-family: 'Geist Mono', monospace !important;
+    }
+
+    .swagger-ui .parameter__name.required::after { color: var(--accent) !important; }
+
+    .swagger-ui .response-col_status {
+      color: var(--accent) !important;
+      font-family: 'Geist Mono', monospace !important;
+    }
+    .swagger-ui .response-col_description { color: var(--text) !important; }
+
+    .swagger-ui .btn {
+      background: var(--accent) !important;
+      color: #000 !important;
+      border: none !important;
+      font-family: 'Geist', sans-serif !important;
+      font-weight: 700 !important;
+      border-radius: 8px !important;
+    }
+
+    .swagger-ui .btn.cancel {
+      background: transparent !important;
+      color: var(--muted) !important;
+      border: 1px solid var(--border) !important;
+    }
+
+    .swagger-ui input[type=text],
+    .swagger-ui input[type=password],
+    .swagger-ui textarea,
+    .swagger-ui select {
+      background: var(--bg) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text) !important;
+      font-family: 'Geist Mono', monospace !important;
+      border-radius: 8px !important;
+    }
+
+    .swagger-ui .microlight,
+    .swagger-ui .highlight-code {
+      background: var(--surface) !important;
+      color: var(--accent) !important;
+      font-family: 'Geist Mono', monospace !important;
+    }
+
+    .swagger-ui .model-box {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+    }
+
+    .swagger-ui section.models {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 12px !important;
+    }
+
+    .swagger-ui .model-title {
+      color: var(--text) !important;
+      font-family: 'Geist', sans-serif !important;
+    }
+
+    .swagger-ui svg { fill: var(--muted) !important; }
+    .swagger-ui .opblock-summary svg { fill: var(--text) !important; }
+
+    .swagger-ui p,
+    .swagger-ui h1, .swagger-ui h2, .swagger-ui h3,
+    .swagger-ui h4, .swagger-ui h5 { color: var(--text) !important; }
+
+    .swagger-ui .markdown p {
+      color: var(--muted) !important;
+      font-family: 'Geist Mono', monospace !important;
+      font-size: 0.87rem !important;
+    }
+
+    .swagger-ui .response-control-media-type__accept-message { color: var(--muted) !important; }
+    .swagger-ui .execute-wrapper { padding: 0.5rem 1rem !important; }
+    .swagger-ui .loading-container { display: none; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: 'Geist Mono', monospace;
+      position: relative;
+      z-index: 1;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── MOBILE RESPONSIVENESS ─────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.25rem; }
+      .logo { font-size: 1.2rem; }
+      .nav-links a { font-size: 0.72rem; margin-left: 1rem; }
+
+      .docs-header { padding: 2.5rem 1rem 2rem; }
+
+      #swagger-wrapper { padding: 0 0.75rem 3rem; }
+
+      .swagger-ui .opblock-summary-path {
+        font-size: 0.78rem !important;
+        word-break: break-all;
+      }
+      .swagger-ui table { display: block; overflow-x: auto; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 0.9rem 1rem; }
+      .nav-links a { margin-left: 0.75rem; letter-spacing: 0.02em; }
+      .docs-header h1 { font-size: 1.9rem; }
+
+      .swagger-ui .opblock-summary-method {
+        font-size: 0.68rem !important;
+        padding: 4px 6px !important;
+        min-width: 50px !important;
+      }
+      .swagger-ui .opblock-summary {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">tini<span>.click</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/api/health">Status</a>
+    </div>
+  </nav>
+
+  <div class="docs-header">
+    <div class="docs-tag">📖 REST API</div>
+    <h1>Documentação</h1>
+  </div>
+
+  <div id="swagger-wrapper">
+    <div id="swagger-ui"></div>
+  </div>
+
+  <footer>
+    tini.click &nbsp;|&nbsp; Desenvolvido por <a href="https://linkedin.com/in/batistabjs" target="_blank" rel="noopener">@batistabjs</a>
+  </footer>
+
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script>
+  const spec = {
+    openapi: "3.0.0",
+    info: {
+      title: "tini.click API",
+      version: "1.0.0",
+      description: "API de encurtamento de links. Simples, rápida e sem autenticação."
+    },
+    servers: [
+      { url: window.location.origin, description: "Servidor atual" }
+    ],
+    tags: [
+      { name: "Links", description: "Criação e consulta de links encurtados" },
+      { name: "Sistema", description: "Saúde e monitoramento" }
+    ],
+    paths: {
+      "/api": {
+        get: {
+          tags: ["Links"],
+          summary: "Encurtar uma URL",
+          description: "Recebe uma URL longa e retorna um link curto. Se a URL já foi encurtada anteriormente, o mesmo código é retornado (sem duplicatas).",
+          parameters: [
+            {
+              name: "url",
+              in: "query",
+              required: true,
+              description: "A URL completa a ser encurtada (deve incluir o protocolo, ex: https://)",
+              schema: {
+                type: "string",
+                format: "uri",
+                example: "https://www.google.com/search?q=encurtador+de+links"
+              }
+            }
+          ],
+          responses: {
+            "200": {
+              description: "URL já existia — retorna o link curto existente",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ShortLinkResponse" },
+                  example: {
+                    shortUrl: "https://tini.click/0",
+                    originalUrl: "https://www.google.com/search?q=encurtador+de+links",
+                    shortCode: "0"
+                  }
+                }
+              }
+            },
+            "201": {
+              description: "Novo link criado com sucesso",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ShortLinkResponse" },
+                  example: {
+                    shortUrl: "https://tini.click/42",
+                    originalUrl: "https://www.google.com/search?q=encurtador+de+links",
+                    shortCode: "42"
+                  }
+                }
+              }
+            },
+            "400": {
+              description: "Parâmetro ausente ou URL inválida",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                  examples: {
+                    missing: {
+                      summary: "URL não informada",
+                      value: { error: "URL query parameter is required" }
+                    },
+                    invalid: {
+                      summary: "URL inválida",
+                      value: { error: "Invalid URL format" }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              description: "Erro interno do servidor",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/{shortCode}": {
+        get: {
+          tags: ["Links"],
+          summary: "Redirecionar para URL original",
+          description: "Redireciona automaticamente para a URL original associada ao código curto.",
+          parameters: [
+            {
+              name: "shortCode",
+              in: "path",
+              required: true,
+              description: "O código curto gerado pelo encurtador",
+              schema: { type: "string", example: "42" }
+            }
+          ],
+          responses: {
+            "302": {
+              description: "Redirecionamento para a URL original",
+              headers: {
+                Location: {
+                  description: "URL de destino",
+                  schema: { type: "string", format: "uri" }
+                }
+              }
+            },
+            "404": {
+              description: "Código curto não encontrado",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                  example: { error: "Short link not found" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/links": {
+        get: {
+          tags: ["Links"],
+          summary: "Listar todos os links",
+          description: "Retorna todos os links encurtados armazenados, em ordem de criação.",
+          responses: {
+            "200": {
+              description: "Lista de links",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      links: {
+                        type: "array",
+                        items: { $ref: "#/components/schemas/LinkItem" }
+                      },
+                      count: {
+                        type: "integer",
+                        description: "Total de links cadastrados",
+                        example: 3
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/health": {
+        get: {
+          tags: ["Sistema"],
+          summary: "Health check",
+          description: "Verifica se a API e o banco de dados estão operacionais.",
+          responses: {
+            "200": {
+              description: "Sistema saudável",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/HealthResponse" },
+                  example: { status: "ok", database: "connected", timestamp: "2024-01-15T10:30:00.000Z" }
+                }
+              }
+            },
+            "503": {
+              description: "Banco de dados indisponível",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/HealthResponse" },
+                  example: { status: "error", database: "disconnected", timestamp: "2024-01-15T10:30:00.000Z" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/ban/{id}": {
+        get: {
+          tags: ["Links"],
+          summary: "Banir um link curto existente",
+          description: "Muda o status do link (ban) para true com base no ID fornecido. Se um usuário tentar acessar um link banido, não será redirecionado.",
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              description: "ID do registro no banco de dados",
+              schema: {
+                type: "integer",
+                example: 1
+              }
+            }
+          ],
+          responses: {
+            "200": {
+              description: "Link banido com sucesso",
+              content: {
+                "application/json": {
+                  example: {
+                    message: "Link successfully banned",
+                    id: "1"
+                  }
+                }
+              }
+            },
+            "404": {
+              description: "Link não encontrado",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                  example: {
+                    error: "Link not found"
+                  }
+                }
+              }
+            },
+            "500": {
+              description: "Erro interno no servidor",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    components: {
+      schemas: {
+        ShortLinkResponse: {
+          type: "object",
+          properties: {
+            shortUrl: { type: "string", description: "URL curta completa (com domínio)", example: "https://tini.click/42" },
+            originalUrl: { type: "string", description: "URL original enviada", example: "https://www.google.com/search?q=encurtador+de+links" },
+            shortCode: { type: "string", description: "Código curto gerado (sequencial)", example: "42" }
+          }
+        },
+        LinkItem: {
+          type: "object",
+          properties: {
+            shortCode: { type: "string", example: "0" },
+            shortUrl: { type: "string", example: "https://tini.click/0" },
+            originalUrl: { type: "string", example: "https://exemplo.com" },
+            createdAt: { type: "string", format: "date-time", example: "2024-01-15T10:00:00.000Z" }
+          }
+        },
+        HealthResponse: {
+          type: "object",
+          properties: {
+            status: { type: "string", enum: ["ok", "error"], example: "ok" },
+            database: { type: "string", enum: ["connected", "disconnected"], example: "connected" },
+            timestamp: { type: "string", format: "date-time" }
+          }
+        },
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            error: { type: "string", description: "Mensagem de erro", example: "URL query parameter is required" }
+          }
+        }
+      }
+    }
+  };
+
+  SwaggerUIBundle({
+    spec,
+    dom_id: '#swagger-ui',
+    presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+    layout: "BaseLayout",
+    deepLinking: true,
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 1,
+    displayRequestDuration: true,
+    tryItOutEnabled: true,
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+services:
+  tiniclick:
+    container_name: app
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - nginx_proxy
+    environment:
+      PORT: ${PORT}
+      NODE_ENV: ${NODE_ENV}
+      BASE_URL: ${BASE_URL}
+      # Porta interna do MySQL na rede Docker (não confundir com a porta do host)
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:${PORT}/api/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      mysql-ivi:
+        condition: service_healthy
+
+  # Banco de dados local (obrigatório — a app depende dele via depends_on)
+  mysql-ivi:
+    image: mysql:8.0
+    container_name: banco
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      # Host 3309 → container MySQL 3306 (porta interna padrão)
+      - "3309:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Scripts do banco de dados
+      - ./db-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - nginx_proxy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  mysql_data:
+
+networks:
+  nginx_proxy:
+    external: true

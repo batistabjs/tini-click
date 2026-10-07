@@ -1,0 +1,41 @@
+services:
+  tiniclick:
+    container_name: app
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - nginx_proxy
+    environment:
+      PORT: ${PORT}
+      NODE_ENV: ${NODE_ENV}
+      BASE_URL: ${BASE_URL}
+      # Aponte para o MySQL externo (não use o serviço local do compose-local)
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:${PORT}/api/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  nginx_proxy:
+    external: true
